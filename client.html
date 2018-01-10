@@ -1,23 +1,34 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>WebSocket Echo Demo</title>
+    <title>Chat Demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <style>
+        .red-font{
+            color: red
+        }
+    </style>
     <script>
-    var ws = new WebSocket("ws://39.106.0.53:8181");
+    var ws = new WebSocket("ws://localhost:8181");
     var $ = function(data){
         return document.querySelector(data);
     }
     ws.onopen = function (e) {
         console.log('Connection to server opened');
     }
+
+    ws.onclose = function (e) {
+        console.log('Connection to server closed');
+    }
+
+
     function sendMessage() {
-        const input =  $('#message');
-        const name = $('#user_name').value;
-        const value = input.value;
-        const obj = {
-            name,
-            value
+        var input =  $('#message');
+        var name = $('#user_name').value;
+        var value = input.value;
+        var obj = {
+            name:name,
+            value:value
         }
         
         ws.send(JSON.stringify(obj));
@@ -25,8 +36,14 @@
     }
     function addChatInfo(data){
         var vertical = $('.chat-list');
+        var name = $('#user_name').value;
         var dom = document.createElement('h1');
         dom.innerHTML = data;
+
+        if(data.split(":")[0] === name){
+            dom.className = 'red-font';
+        }
+
         vertical.insertBefore(dom,vertical.firstElementChild);
     }
     ws.onmessage = function(evt) { 
@@ -45,7 +62,7 @@
                 <div class="form-group">
                     <input type="text" id="user_name" placeholder="姓名" >
                     <input class="form-control" type="text" name="message" id="message"
-                           placeholder="聊天内容" value="" />
+                           placeholder="聊天内容" value="" onkeydown='if(event.keyCode==13){sendMessage();}'/>
                 </div>
                 <button type="button" id="send" class="btn btn-primary"
                         onclick="sendMessage();">
